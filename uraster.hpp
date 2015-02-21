@@ -83,7 +83,7 @@ void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3
 		//Compute barycentric coordinates
 		Eigen::Vector3f bary;
 		bary.head<2>()=Ti*(ssc-epoints[2].head<2>());
-		bary[3]=1.0f-bary[0]-bary[1];
+		bary[2]=1.0f-bary[0]-bary[1];
 
 		if((bary.array() < 1.0f).all() && (bary.array() > 0.0f).all())
 		{
