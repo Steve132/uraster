@@ -34,6 +34,10 @@ public:
 	{
 		return data[y*width+x];
 	}
+	void clear(const PixelType& pt=PixelType())
+	{
+		std::fill(data.begin(),data.end(),pt);
+	}
 };
 
 template<class VertexVsIn,class VertexVsOut,class VertShader>
@@ -62,6 +66,7 @@ void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3
 	Eigen::Array2i isz(fb.width,fb.height);	
 	Eigen::Array2i ibb_ul=((bb_ul*0.5f+0.5f)*isz.cast<float>()).cast<int>();	//move bounding box from (-1.0,1.0)->(0,imgdim)
 	Eigen::Array2i ibb_lr=((bb_lr*0.5f+0.5f)*isz.cast<float>()).cast<int>();
+	ibb_lr+=1;	//add one pixel of coverage
 	//clamp the bounding box to the framebuffer size
 	ibb_ul=ibb_ul.max(Eigen::Array2i(0,0));
 	ibb_lr=ibb_lr.min(isz);

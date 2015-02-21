@@ -79,16 +79,21 @@ void write_framebuffer(const uraster::Framebuffer<TeapotPixel>& fb,const std::st
 
 int main()
 {
-	const TeapotVert triangle[3]={
+	const TeapotVert triangle[6]={
 		{-0.5f,-0.5f,0.0f},
 		{ 0.5f,-0.5f,0.0f},
-		{ 0.0f,.5f,0.0f}};
-	const size_t tid[3]={0,1,2};
+		{ 0.0f,.5f,0.0f},
+
+		{-0.0f,-0.0f,0.2f},
+		{ 1.0f,-0.0f,0.2f},
+		{ 0.5f,1.0f,  0.2f}
+	};
+	const size_t tid[6]={0,1,2,3,4,5};
 
 	const TeapotVert* vbb=triangle;
-	const TeapotVert* vbe=triangle+3;
+	const TeapotVert* vbe=triangle+6;
 	const size_t* ibb=tid;
-	const size_t* ibe=tid+3;
+	const size_t* ibe=tid+6;
 
 	Eigen::Matrix4f camera_matrix=Eigen::Matrix4f::Identity();
 	float time=0.0;
