@@ -13,10 +13,11 @@ typedef struct { float x,y,z,nx,ny,nz; } BunnyVert;
 struct BunnyVertVsOut
 {
 	Eigen::Vector4f p;
-	Eigen::Vector3f color;
+	Eigen::Vector3f n;
+	Eigen::Vector2f tc;
 
 	BunnyVertVsOut():
-		p(0.0f,0.0f,0.0f,0.0f),color(0.0f,0.0f,0.0f)
+		p(0.0f,0.0f,0.0f,0.0f),n(0.0f,0.0f,0.0f),tc(0.0f,0.0f)
 	{}
 	const Eigen::Vector4f& position() const
 	{
@@ -25,12 +26,16 @@ struct BunnyVertVsOut
 	BunnyVertVsOut& operator+=(const BunnyVertVsOut& tp)
 	{
 		p+=tp.p;
-		color+=tp.color;
+		n+=tp.n;
+		tc+=tp.tc;
 		return *this;
 	}
 	BunnyVertVsOut& operator*=(const float& f)
 	{
-		p*=f;color*=f;return *this;
+		p*=f;
+		n*=f;
+		tc*=f;
+		return *this;
 	}
 };
 
@@ -47,15 +52,28 @@ BunnyVertVsOut example_vertex_shader(const BunnyVert& vin,const Eigen::Matrix4f&
 {
 	BunnyVertVsOut vout;
 	vout.p=mvp*Eigen::Vector4f(vin.x,vin.y,vin.z,1.0f);
+	vout.tc=Eigen::Vector2f(vin.x,vin.y).array().abs();
+	vout.tc[0]=vout.tc[0]-floor(vout.tc[0]);
+	vout.tc[1]=vout.tc[1]-floor(vout.tc[1]);
 	//vout.p[3]=1.0f;
-	vout.color=Eigen::Vector3f(vin.nx,vin.ny,vin.nz)*0.5f+Eigen::Vector3f(0.5f,0.5f,0.5f);
+	vout.n=Eigen::Vector3f(vin.nx,vin.ny,vin.nz);
 	return vout;
 }
 
-BunnyPixel example_fragment_shader(const BunnyVertVsOut& fsin)
+BunnyPixel example_fragment_shader(const BunnyVertVsOut& fsin,const CImg<uint8_t>& tex1,float t)
 {
 	BunnyPixel p;
-	p.color.head<3>()=fsin.color;
+	
+	Eigen::Vector2f tc(fsin.tc[0]*tex1.width()*0.4f,fsin.tc[1]*tex1.height()*0.4f);
+	Eigen::Vector3f diffuse;
+	for(int c=0;c<3;c++)
+	{
+		diffuse[c]=tex1.linear_atXY(tc[0],tc[1],0,c)/255.0f;
+	}
+	float theta=1.2f*sin(t);
+	Eigen::Vector3f ld(1.0,sin(theta),cos(theta));
+	float intensity=ld.normalized().dot(fsin.n);
+	p.color.head<3>()=diffuse*intensity;
 	return p;
 }
 
@@ -137,9 +155,8 @@ int main()
 	model(0,3)=0.2;
 	model(1,3)=0.5;
 
+	CImg<uint8_t> woodtex("example/woodgrain.jpg");
 
-
-	
 	float time=0.0;
 
 	uraster::Framebuffer<BunnyPixel> tp(640,480);
@@ -165,7 +182,7 @@ int main()
 			ibb,ibe,
 			vcb,vce,
 			std::bind(example_vertex_shader,placeholders::_1,camera_matrix,nowtime.count()),
-			example_fragment_shader
+			std::bind(example_fragment_shader,placeholders::_1,std::ref(woodtex),nowtime.count())
 		);
 
 		numframes++;
