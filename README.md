@@ -2,6 +2,8 @@
 
 Micro simple Rasterizer in a single C++11 header file.    Mostly useful as a way of demonstrating the rendering pipeline
 
+![Image from uraster](https://raw.githubusercontent.com/Steve132/uraster/master/example/screenshot.jpg)
+
 A day ago, I saw this post [http://www.reddit.com/r/GraphicsProgramming/comments/2whjam/creating_a_software_renderer/](Asking how to create a software renderer).
 
 I started writing my response, and it looked something like this:
