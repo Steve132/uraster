@@ -12,6 +12,9 @@
 namespace uraster
 {
 
+
+//This is the framebuffer class.  It's a part of namespace uraster because the uraster needs to have a well-defined image class to render to.
+//It is templated because the output type need not be only colors, could contain anything (like a stencil buffer or depth buffer or gbuffer for deferred rendering)
 template<class PixelType>
 class Framebuffer
 {
@@ -21,15 +24,18 @@ protected:
 public:
 	const std::size_t& width;
 	const std::size_t& height;
+	//constructor initializes the array
 	Framebuffer(std::size_t w,std::size_t h):
 		data(w*h),
 		fw(w),fh(h),
 		width(fw),height(fh)
 	{}
+	//2D pixel access
 	PixelType& operator()(std::size_t x,std::size_t y)
 	{
 		return data[y*width+x];
 	}
+	//const version
 	const PixelType& operator()(std::size_t x,std::size_t y) const
 	{
 		return data[y*width+x];
@@ -40,6 +46,9 @@ public:
 	}
 };
 
+//This function runs the vertex shader on all the vertices, producing the varyings that will be interpolated by the rasterizer.
+//VertexVsIn can be anything, VertexVsOut MUST have a position() method that returns a 4D vector, and it must have an overloaded *= and += operator for the interpolation
+//The right way to think of VertexVsOut is that it is the class you write containing the varying outputs from the vertex shader.
 template<class VertexVsIn,class VertexVsOut,class VertShader>
 void run_vertex_shader(const VertexVsIn* b,const VertexVsIn* e,VertexVsOut* o,
 	VertShader vertex_shader)
@@ -51,32 +60,37 @@ void run_vertex_shader(const VertexVsIn* b,const VertexVsIn* e,VertexVsOut* o,
 		o[i]=vertex_shader(b[i]);
 	}
 }
-
+//This function takes in 3 varyings vertices from the fragment shader that make up a triangle,
+//rasterizes the triangle and runs the fragment shader on each resulting pixel.
 template<class PixelOut,class VertexVsOut,class FragShader>
 void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3>& verts,FragShader fragment_shader)
 {
 	std::array<Eigen::Vector4f,3> points{{verts[0].position(),verts[1].position(),verts[2].position()}};
-	
+	//Do the perspective divide by w to get screen space coordinates.
 	std::array<Eigen::Vector4f,3> epoints{{points[0]/points[0][3],points[1]/points[1][3],points[2]/points[2][3]}};
-
 	auto ss1=epoints[0].head<2>().array(),ss2=epoints[1].head<2>().array(),ss3=epoints[2].head<2>().array();
+
 	//calculate the bounding box of the triangle in screen space floating point.
 	Eigen::Array2f bb_ul=ss1.min(ss2).min(ss3);
 	Eigen::Array2f bb_lr=ss1.max(ss2).max(ss3);
 	Eigen::Array2i isz(fb.width,fb.height);	
-	Eigen::Array2i ibb_ul=((bb_ul*0.5f+0.5f)*isz.cast<float>()).cast<int>();	//move bounding box from (-1.0,1.0)->(0,imgdim)
+
+	//convert bounding box to fixed point.
+	//move bounding box from (-1.0,1.0)->(0,imgdim)
+	Eigen::Array2i ibb_ul=((bb_ul*0.5f+0.5f)*isz.cast<float>()).cast<int>();	
 	Eigen::Array2i ibb_lr=((bb_lr*0.5f+0.5f)*isz.cast<float>()).cast<int>();
 	ibb_lr+=1;	//add one pixel of coverage
-	//clamp the bounding box to the framebuffer size
+
+	//clamp the bounding box to the framebuffer size if necessary (this is clipping.  Not quite how the GPU actually does it but same effect sorta).
 	ibb_ul=ibb_ul.max(Eigen::Array2i(0,0));
 	ibb_lr=ibb_lr.min(isz);
 	
-	//Pre-compute barycentric 
+	//Pre-compute barycentric transform to the resulting triangle. 
 	Eigen::Matrix2f T;
 	T << (ss1-ss3).matrix(),(ss2-ss3).matrix();
 	Eigen::Matrix2f Ti=T.inverse();
 
-	
+	//for all the pixels in the bounding box
 	for(int y=ibb_ul[1];y<ibb_lr[1];y++)
 	for(int x=ibb_ul[0];x<ibb_lr[0];x++)
 	{
@@ -90,26 +104,33 @@ void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3
 		bary.head<2>()=Ti*(ssc-epoints[2].head<2>());
 		bary[2]=1.0f-bary[0]-bary[1];
 
+		//if the pixel has valid barycentric coordinates, the pixel is in the triangle
 		if((bary.array() < 1.0f).all() && (bary.array() > 0.0f).all())
 		{
 			float d=bary[0]*epoints[0][2]+bary[1]*epoints[1][2]+bary[2]*epoints[2][2];
+			//Reference the current pixel at that coordinate
 			PixelOut& po=fb(x,y);
-			if(po.depth() < d && d < 1.0) //depth test
+			// if the interpolated depth passes the depth test
+			if(po.depth() < d && d < 1.0)
 			{
+				//interpolate varying parameters
 				VertexVsOut v;
 				for(int i=0;i<3;i++)
 				{	
 					VertexVsOut vt=verts[i];
 					vt*=bary[i];
-					v+=vt;	//interpolate varying parameters
+					v+=vt;
 				}
+				//call the fragment shader
 				po=fragment_shader(v);
-				po.depth()=d;
+				po.depth()=d; //write the depth buffer
 			}
 		}
 	}
 }
 
+
+//This function rasterizes a set of triangles determined by an index buffer and a buffer of output verts.
 template<class PixelOut,class VertexVsOut,class FragShader>
 void rasterize(Framebuffer<PixelOut>& fb,const std::size_t* ib,const std::size_t* ie,const VertexVsOut* verts,
 	FragShader fragment_shader)
@@ -124,7 +145,7 @@ void rasterize(Framebuffer<PixelOut>& fb,const std::size_t* ib,const std::size_t
 	}
 }
 
-
+//This function does a draw call from an indexed buffer
 template<class PixelOut,class VertexVsOut,class VertexVsIn,class VertShader, class FragShader>
 void draw(	Framebuffer<PixelOut>& fb,
 		const VertexVsIn* vertexbuffer_b,const VertexVsIn* vertexbuffer_e,
