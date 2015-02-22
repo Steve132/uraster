@@ -1,6 +1,6 @@
 # uraster
 
-Micro simple Rasterizer in a single C++11 header file.    Mostly useful as a way of demonstrating the rendering pipeline
+Micro simple software rasterizer in a single C++11 header file.  Does not use OpenGL.  Pure C++11.   Mostly useful as a way of demonstrating the rendering pipeline
 
 ![Image from uraster](https://raw.githubusercontent.com/Steve132/uraster/master/example/screenshot.jpg)
 
