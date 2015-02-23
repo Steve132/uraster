@@ -6,7 +6,7 @@ Mostly useful as a way of teaching how the rendering pipeline in hardware works.
 
 ![Image from uraster](https://raw.githubusercontent.com/Steve132/uraster/master/example/screenshot.jpg)
 
-A day ago, I saw this post [http://www.reddit.com/r/GraphicsProgramming/comments/2whjam/creating_a_software_renderer/](Asking how to create a software renderer).
+A day ago, I saw this post [Asking how to create a software renderer](http://www.reddit.com/r/GraphicsProgramming/comments/2whjam/creating_a_software_renderer/).
 
 I started writing my response, and it looked something like this:
 
