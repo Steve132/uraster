@@ -20,15 +20,13 @@ class Framebuffer
 {
 protected:
 	std::vector<PixelType> data;
-	std::size_t fw,fh;
 public:
-	const std::size_t& width;
-	const std::size_t& height;
+	const std::size_t width;
+	const std::size_t height;
 	//constructor initializes the array
 	Framebuffer(std::size_t w,std::size_t h):
 		data(w*h),
-		fw(w),fh(h),
-		width(fw),height(fh)
+		width(w),height(h)
 	{}
 	//2D pixel access
 	PixelType& operator()(std::size_t x,std::size_t y)
