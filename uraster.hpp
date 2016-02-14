@@ -58,6 +58,26 @@ void run_vertex_shader(const VertexVsIn* b,const VertexVsIn* e,VertexVsOut* o,
 		o[i]=vertex_shader(b[i]);
 	}
 }
+struct BarycentricTransform
+{
+private:
+	Eigen::Vector2f offset;
+	Eigen::Matrix2f Ti;
+public:
+	BarycentricTransform(const Eigen::Vector2f& s1,const Eigen::Vector2f& s2,const Eigen::Vector2f& s3):
+		offset(s3)
+	{
+		Eigen::Matrix2f T;
+		T << (s1-s3),(s2-s3);
+		Ti=T.inverse();
+	}
+	Eigen::Vector3f operator()(const Eigen::Vector2f& v)
+	{
+		Eigen::Vector2f b;
+		b=Ti*(v-offset);
+		return Eigen::Vector3f(b[0],b[1],1.0f-b[0]-b[1]);
+	}
+};
 //This function takes in 3 varyings vertices from the fragment shader that make up a triangle,
 //rasterizes the triangle and runs the fragment shader on each resulting pixel.
 template<class PixelOut,class VertexVsOut,class FragShader>
@@ -83,10 +103,8 @@ void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3
 	ibb_ul=ibb_ul.max(Eigen::Array2i(0,0));
 	ibb_lr=ibb_lr.min(isz);
 	
-	//Pre-compute barycentric transform to the resulting triangle. 
-	Eigen::Matrix2f T;
-	T << (ss1-ss3).matrix(),(ss2-ss3).matrix();
-	Eigen::Matrix2f Ti=T.inverse();
+
+	BarycentricTransform bt(ss1.matrix(),ss2.matrix(),ss3.matrix());
 
 	//for all the pixels in the bounding box
 	for(int y=ibb_ul[1];y<ibb_lr[1];y++)
@@ -97,11 +115,9 @@ void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3
 		ssc.array()-=0.5f;
 		ssc.array()*=2.0f;
 
-		//Compute barycentric coordinates
-		Eigen::Vector3f bary;
-		bary.head<2>()=Ti*(ssc-epoints[2].head<2>());
-		bary[2]=1.0f-bary[0]-bary[1];
-
+		//Compute barycentric coordinates of the pixel center
+		Eigen::Vector3f bary=bt(ssc);
+		
 		//if the pixel has valid barycentric coordinates, the pixel is in the triangle
 		if((bary.array() < 1.0f).all() && (bary.array() > 0.0f).all())
 		{
