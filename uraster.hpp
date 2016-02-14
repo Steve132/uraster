@@ -71,7 +71,7 @@ public:
 		T << (s1-s3),(s2-s3);
 		Ti=T.inverse();
 	}
-	Eigen::Vector3f operator()(const Eigen::Vector2f& v)
+	Eigen::Vector3f operator()(const Eigen::Vector2f& v) const
 	{
 		Eigen::Vector2f b;
 		b=Ti*(v-offset);
