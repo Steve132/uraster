@@ -65,7 +65,7 @@ static VertVsOut mex_vertex_shader(const Vert& vin,const Eigen::Matrix<PFloat,4,
 
 static Pixel mex_fragment_shader(const VertVsOut& fsin)
 {
-	Pixel p(fsin.attrs.size());
+	Pixel p(fsin.attrs.cols());
 	p.drawn=1;
 	p.attrs=fsin.attrs;
 	return p;
@@ -106,6 +106,23 @@ static void uraster_cpp(
 		std::bind(mex_vertex_shader,std::placeholders::_1,camera),
 		mex_fragment_shader
 	);
+
+	//writeback step
+	#pragma omp parallel for
+	for(size_t r=0;r < num_img_rows;r++)
+	{
+		for(size_t c=0;c < num_img_cols;c++)
+		{
+			const Pixel& px=tp(c,r);
+			size_t outoff=c*num_img_rows+r;
+			outmask[outoff]=px.drawn;
+			size_t imsize=num_img_rows*num_img_cols;
+			for(size_t k=0;k < attrs.cols(); k++)
+			{
+				outdata[k*imgsize+outoff]=px.attrs[k];
+			}
+		}
+	}
 } 
 };
 /*
