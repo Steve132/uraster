@@ -123,7 +123,7 @@ int main()
 	
 	float time=0.0;
 
-	uraster::Framebuffer<BunnyPixel> tp(640<<5,480<<5);
+	uraster::Framebuffer<BunnyPixel> tp(640<<2,480<<2);
 	uraster::draw(tp,
 		vbb,vbe,
 		ibb,ibe,
