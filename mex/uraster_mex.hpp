@@ -59,6 +59,7 @@ static VertVsOut mex_vertex_shader(const Vert& vin,const Eigen::Matrix<PFloat,4,
 	Eigen::Matrix<PFloat,4,1> pin(0.0f,0.0f,0.0f,1.0f);
 	std::copy(vin.position_ptr,vin.position_ptr+vin.num_positions,pin.data());
 	vout.p=mvp*pin;
+	
 	std::copy(vin.attribute_ptr,vin.attribute_ptr+vin.num_attributes,vout.attrs.data());
 	return vout;
 }

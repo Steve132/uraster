@@ -128,13 +128,15 @@ void rasterize_triangle(Framebuffer<PixelOut>& fb,const std::array<VertexVsOut,3
 			if(po.depth() < d && d < 1.0)
 			{
 				//interpolate varying parameters
-				VertexVsOut v;
-				for(int i=0;i<3;i++)
-				{	
-					VertexVsOut vt=verts[i];
-					vt*=bary[i];
-					v+=vt;
-				}
+				VertexVsOut v=verts[0];
+				v*=bary[0];
+				VertexVsOut vt=verts[1];
+				vt*=bary[1];
+				v+=vt;
+				vt=verts[2];
+				vt*=bary[2];
+				v+=vt;
+				
 				//call the fragment shader
 				po=fragment_shader(v);
 				po.depth()=d; //write the depth buffer

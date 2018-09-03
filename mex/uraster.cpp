@@ -113,10 +113,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 	/* create eigen3 4x4 camera matrix */
 	Eigen::Matrix<float,4,4> eigenCamera;
-	eigenCamera << camera[0], camera[4], camera[8], camera[12];
-		camera[1], camera[5], camera[9], camera[13];
-		camera[2], camera[6], camera[10], camera[14];
-		camera[3], camera[7], camera[11], camera[15];
+	for(int i = 0; i < 4; i++)
+	{
+		for(int j = 0; j < 4; j++)
+		{
+			eigenCamera(i,j) = camera[i*4 + j];
+		}
+	}
 
 	/*
 	size_t num_faces,std::size_t* faces,

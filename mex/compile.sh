@@ -1,0 +1,1 @@
+/usr/local/MATLAB/R2012a/bin/mex -I/usr/include/eigen3 -I.. -v CXXFLAGS='$CXXFLAGS -std=c++11 -fopenmp' LDFLAGS='$LDFLAGS -fopenmp' uraster.cpp && /usr/local/MATLAB/R2012a/bin/matlab -nodisplay -nodesktop -r "uraster_demo"
