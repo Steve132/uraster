@@ -1,7 +1,5 @@
 #include<uraster.hpp>
 #include<functional>
-using namespace std;
-
 
 template<class PFloat,class AFloat>
 struct Mex
@@ -105,7 +103,7 @@ static void uraster_cpp(
 		mv.data(),mv.data()+mv.size(),
 		indices,indices+num_indices,
 		nulmvvo,nulmvvo,
-		std::bind(mex_vertex_shader,placeholders::_1,camera),
+		std::bind(mex_vertex_shader,std::placeholders::_1,camera),
 		mex_fragment_shader
 	);
 } 
