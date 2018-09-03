@@ -1,6 +1,6 @@
 function [P]=gluperspective(fovy,aspect,near,far)
 
-f=cot(fovy/2.0);
+f=cot((fovy/2.0) * (pi / 180.0));
 P=zeros(4);
 P(1,1)=f/aspect;
 P(2,2)=f;
