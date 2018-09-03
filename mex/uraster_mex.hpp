@@ -117,9 +117,10 @@ static void uraster_cpp(
 			size_t outoff=c*num_img_rows+r;
 			outmask[outoff]=px.drawn;
 			size_t imsize=num_img_rows*num_img_cols;
-			for(size_t k=0;k < attrs.cols(); k++)
+			size_t pc = px.attrs.cols();
+			for(size_t k=0;k < pc; k++)
 			{
-				outdata[k*imgsize+outoff]=px.attrs[k];
+				outdata[k*imsize+outoff]=px.attrs[k];
 			}
 		}
 	}

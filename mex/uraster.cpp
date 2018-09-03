@@ -21,6 +21,7 @@
  *
  *========================================================*/
 /* compile on commandline: /usr/local/MATLAB/R2012a/bin/mex -I/usr/include/eigen3 -I.. -v CXXFLAGS='$CXXFLAGS -std=c++11 -fopenmp' LDFLAGS='$LDFLAGS -fopenmp' uraster.cpp */
+/* test on commandline: /usr/local/MATLAB/R2012a/bin/matlab -nodisplay -nodesktop -r "uraster_demo" */
 
 #include "mex.h"
 #include "matrix.h"
@@ -59,7 +60,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	}
 	/* faces = mxGetInt32s(prhs[0]); if newer matlab... */
 	intFaces = (int*)mxGetData(prhs[0]);
-	std::vector<size_t> faces(intFaces, intFaces + mfaces);
+	std::vector<size_t> faces(intFaces, intFaces + (mfaces * 3));
 	
 	size_t npositions = mxGetN(prhs[1]);
 	size_t npositions_cols = mxGetM(prhs[1]);
