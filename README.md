@@ -24,6 +24,15 @@ I ended up actually filling in the code, and implementing a simple rasterization
 
 There are a couple examples showing how you use it, and I'll add comments or a tutorial to explain the code at a later date.
 
-##Dependencies##
+## Dependencies
 
 It needs Eigen3 for the main header, cmake to build the examples, and CImg (to display) the animation and texturing example.
+
+You can build and run the examples on ubuntu with
+
+    sudo apt install eigen3-dev cimg-dev
+    mkdir build && cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    make -j6
+    cd ..
+    ./build/examples/bunnyanim
