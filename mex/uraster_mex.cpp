@@ -110,7 +110,7 @@ static void uraster_cpp(
 	);
 } 
 };
-
+/*
 void uraster_test()
 {
 	std::vector<float> outdata;
@@ -125,5 +125,5 @@ void uraster_test()
 		nullptr,
 		nullptr
 	);
-}
+}*/
 
