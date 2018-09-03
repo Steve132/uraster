@@ -24,8 +24,8 @@ public:
 	const std::size_t width;
 	const std::size_t height;
 	//constructor initializes the array
-	Framebuffer(std::size_t w,std::size_t h):
-		data(w*h),
+	Framebuffer(std::size_t w,std::size_t h,const PixelType& pt=PixelType()):
+		data(w*h,pt),
 		width(w),height(h)
 	{}
 	//2D pixel access
