@@ -7,7 +7,7 @@
 %
 %	rasterization can be built from a column of vertex attribute data by doing 
 
-function [facemap,barymap,vertmap]=hackraster(faces,positions)
+function [barymap,vertmap,facemap]=hackraster(faces,positions,az,el)
 	%4) render twice: once with facecolors with a binary mask for each color channel
 	%1) find all shared vertices
 	%2) duplicated all shared vertices
@@ -17,19 +17,18 @@ function [facemap,barymap,vertmap]=hackraster(faces,positions)
 
 	M=size(faces,2);
 	N=size(positions,2);
-	faceids=[1:N]'
-	facecolor=bitand([faceids,bitshift(faceids,8),bitshift(faceids,16)])  %varargin and varargin{:}?
-	trimesh(faces,positions(1,:),positions(2,:),positions(3,:),'FaceLighting','none','FaceColor','flat','FaceVertexCData',facecolor);
-	set(gca,'Color','k');
-	facemap=captureimage();
-	facemap=facemap(:,:,1)+facemap(:,:,2)*0x100+facemap(:,:,3)*0x10000;
+	faceids=[1:N]';
+	facecolor=bitand([faceids,bitshift(faceids,-8),bitshift(faceids,-16)],255);  %varargin and varargin{:}?
+	trimesh(faces',positions(1,:)',positions(2,:)',positions(3,:)','FaceLighting','none','FaceColor','flat','FaceVertexCData',facecolor);
+	facemap=captureimage(az,el);
+%	facemap=facemap(:,:,1)+facemap(:,:,2)*0x100+facemap(:,:,3)*0x10000; % matlab no hex??
+	facemap=facemap(:,:,1)+facemap(:,:,2)*256+facemap(:,:,3)*256*256;
 	
 	newpositions=positions(faces(:),:);
 	newfaces=reshape([1:size(newpositions,1)],3,3*M);
 	newcolors=repmat(eye(3),1,M);
-	trimesh(newfaces,newpositions(1,:),newpositions(2,:),newpositions(3,:),'FaceLighting','none','FaceColor','interp','FaceVertexCData',newcolors);
-	set(gca,'Color','k');
-	barymap=captureimage();
+	trimesh(newfaces',newpositions(1,:)',newpositions(2,:)',newpositions(3,:)','FaceLighting','none','FaceColor','interp','FaceVertexCData',newcolors);
+	barymap=captureimage(az,el);
 
 	validids=find(facemap > 0);
 	vertmap=zeros(size(facemap),'uint32');
@@ -39,6 +38,14 @@ function [facemap,barymap,vertmap]=hackraster(faces,positions)
 	vertmap(validids+2*numel(facemap))=faces(3,validfaces); 
 end
 
-function [cimg]=captureimage()
+function [cimg]=captureimage(az,el)
+    set(gcf, 'Color', 'k', 'Renderer', 'OpenGL'); % TODO: set color 'w' as white k for black
+	set(gca, 'Projection', 'perspective');
+    axis equal;
+    axis off;
+    view(az,el);
+    pause;
+%    cimg = print('-RGBImage');
+%    cimg = print('image', '-dpng');
 
 end
