@@ -61,6 +61,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	/* faces = mxGetInt32s(prhs[0]); if newer matlab... */
 	intFaces = (int*)mxGetData(prhs[0]);
 	std::vector<size_t> faces(intFaces, intFaces + (mfaces * 3));
+
+	/* all faces -1 since matlab indexes at 1 but uraster indexes at 0 */
+	/*#pragma omp parallel for
+	for(size_t f=0; f < faces.size(); f++)
+	{
+		faces[f]--;
+	}*/
 	
 	size_t npositions = mxGetN(prhs[1]);
 	size_t npositions_cols = mxGetM(prhs[1]);
@@ -117,7 +124,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	{
 		for(int j = 0; j < 4; j++)
 		{
-			eigenCamera(i,j) = camera[i*4 + j];
+			eigenCamera(i,j) = camera[j*4 + i];
 		}
 	}
 
