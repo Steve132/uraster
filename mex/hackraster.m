@@ -19,23 +19,27 @@ function [barymap,vertmap,facemap]=hackraster(faces,positions,az,el)
 	N=size(positions,2);
 	faceids=[1:N]';
 	facecolor=bitand([faceids,bitshift(faceids,-8),bitshift(faceids,-16)],255);  %varargin and varargin{:}?
-	trimesh(faces',positions(1,:)',positions(2,:)',positions(3,:)','FaceLighting','none','FaceColor','flat','FaceVertexCData',facecolor);
-	facemap=captureimage(az,el);
+
+	trimesh(faces',positions(1,:)',positions(2,:)',positions(3,:)','LineStyle','none','FaceLighting','none','FaceColor','flat','FaceVertexCData',double(facecolor)/255.0);
+	facemap=uint32(captureimage(az,el));
+    
 %	facemap=facemap(:,:,1)+facemap(:,:,2)*0x100+facemap(:,:,3)*0x10000; % matlab no hex??
 	facemap=facemap(:,:,1)+facemap(:,:,2)*256+facemap(:,:,3)*256*256;
-	
-	newpositions=positions(faces(:),:);
-	newfaces=reshape([1:size(newpositions,1)],3,3*M);
+    
+	newpositions=positions(:,faces(:));
+	newfaces=reshape([1:size(newpositions,2)],3,M);
+    
 	newcolors=repmat(eye(3),1,M);
-	trimesh(newfaces',newpositions(1,:)',newpositions(2,:)',newpositions(3,:)','FaceLighting','none','FaceColor','interp','FaceVertexCData',newcolors);
+	trimesh(newfaces',newpositions(1,:)',newpositions(2,:)',newpositions(3,:)','LineStyle','None','FaceLighting','none','FaceColor','interp','FaceVertexCData',newcolors');
 	barymap=captureimage(az,el);
+    barymap=double(barymap)./255.0;
 
 	validids=find(facemap > 0);
 	vertmap=zeros(size(facemap),'uint32');
 	validfaces=facemap(validids);
 	vertmap(validids)=faces(1,validfaces);
 	vertmap(validids+numel(facemap))=faces(2,validfaces);
-	vertmap(validids+2*numel(facemap))=faces(3,validfaces); 
+	vertmap(validids+2*numel(facemap))=faces(3,validfaces);
 end
 
 function [cimg]=captureimage(az,el)
@@ -44,8 +48,8 @@ function [cimg]=captureimage(az,el)
     axis equal;
     axis off;
     view(az,el);
-    pause;
-%    cimg = print('-RGBImage');
-%    cimg = print('image', '-dpng');
-
+    cimg = frame2im(getframe(gcf));
+  %  imwrite(cimg, 'captureimg.png');
+  %  imshow(cimg);
+    %pause;
 end
