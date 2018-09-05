@@ -35,7 +35,7 @@ function [barymap,vertmap,facemap]=hackraster(faces,positions,az,el)
     barymap=double(barymap)./255.0;
 
 	validids=find(facemap > 0);
-	vertmap=zeros(size(facemap),'uint32');
+	vertmap=zeros([size(facemap,1), size(facemap,2), 3],'uint32');
 	validfaces=facemap(validids);
 	vertmap(validids)=faces(1,validfaces);
 	vertmap(validids+numel(facemap))=faces(2,validfaces);
