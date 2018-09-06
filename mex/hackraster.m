@@ -17,12 +17,12 @@ function [barymap,vertmap,facemap]=hackraster(faces,positions,az,el)
 
 	M=size(faces,2);
 	N=size(positions,2);
-	faceids=[1:N]';
+	faceids=[1:M]';
 	facecolor=bitand([faceids,bitshift(faceids,-8),bitshift(faceids,-16)],255);  %varargin and varargin{:}?
 
-	trimesh(faces',positions(1,:)',positions(2,:)',positions(3,:)','LineStyle','none','FaceLighting','none','FaceColor','flat','FaceVertexCData',double(facecolor)/255.0);
+	trimesh(faces',positions(1,:)',positions(2,:)',positions(3,:)','EdgeColor','none','LineStyle','none','FaceLighting','none','FaceColor','flat','FaceVertexCData',double(facecolor)/255.0);
 	facemap=uint32(captureimage(az,el));
-    
+    facemap2 = facemap;
 %	facemap=facemap(:,:,1)+facemap(:,:,2)*0x100+facemap(:,:,3)*0x10000; % matlab no hex??
 	facemap=facemap(:,:,1)+facemap(:,:,2)*256+facemap(:,:,3)*256*256;
     
@@ -30,7 +30,7 @@ function [barymap,vertmap,facemap]=hackraster(faces,positions,az,el)
 	newfaces=reshape([1:size(newpositions,2)],3,M);
     
 	newcolors=repmat(eye(3),1,M);
-	trimesh(newfaces',newpositions(1,:)',newpositions(2,:)',newpositions(3,:)','LineStyle','None','FaceLighting','none','FaceColor','interp','FaceVertexCData',newcolors');
+	trimesh(newfaces',newpositions(1,:)',newpositions(2,:)',newpositions(3,:)','LineStyle','None','EdgeColor','none','FaceLighting','none','FaceColor','interp','FaceVertexCData',newcolors');
 	barymap=captureimage(az,el);
     barymap=double(barymap)./255.0;
 
@@ -45,11 +45,13 @@ end
 function [cimg]=captureimage(az,el)
     set(gcf, 'Color', 'k', 'Renderer', 'OpenGL'); % TODO: set color 'w' as white k for black
 	set(gca, 'Projection', 'perspective');
+	setpos = 0;
+	if(setpos)
+		oldpos = get(gcf, 'Position');
+		set(gcf, 'Position', [oldpos(1), oldpos(2), 512,512]);
+	end
     axis equal;
     axis off;
     view(az,el);
     cimg = frame2im(getframe(gcf));
-  %  imwrite(cimg, 'captureimg.png');
-  %  imshow(cimg);
-    %pause;
 end

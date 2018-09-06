@@ -9,5 +9,7 @@ positions = [-0.5,-0.5,0.0;
 attributes = [eye(3,3),eye(3,3)];
 rows = 512;
 columns = 512;
-[I, M] = uraster(int32(faces), single(positions), single(attributes), camera, rows, columns);
+%[I, M] = uraster(int32(faces), single(positions), single(attributes), camera, rows, columns);
 
+[barymap,vertmap, facemap] = hackraster(faces, positions, 0, 30);
+im=hackraster_interp(vertmap,barymap,[0,.1,.2,.3,.4,.5])
